@@ -1,0 +1,32 @@
+# Sample: Manager + one worker on one machine, built from the local Dockerfile.
+#   docker compose up -d --build
+# Needs the `flamenco` storage volume from the README. To try it without the NAS, swap
+# `flamenco:/workspace/flamenco` for `./workspace:/workspace/flamenco` and `mkdir -p workspace/project`.
+services:
+  manager:
+    build: { context: ., target: manager }
+    ports: ["8080:8080"]
+    volumes:
+      - manager-data:/data
+      - flamenco:/workspace/flamenco
+    restart: unless-stopped
+
+  worker:
+    build: { context: ., target: worker }
+    environment:
+      MANAGER_URL: http://manager:8080/
+      WORKER_NAME: compose-worker
+    volumes:
+      - flamenco:/workspace/flamenco
+    depends_on:
+      manager: { condition: service_healthy }
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+volumes:
+  manager-data:
+  flamenco:
+    external: true

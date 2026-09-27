@@ -1,0 +1,53 @@
+# Configuration file for Flamenco.
+# For an explanation of the fields, refer to the Settings tab in the Manager web interface.
+#
+# NOTE: this file will be overwritten by Flamenco Manager's web-based configuration system.
+#
+# This file was written on 2026-09-26 15:15:08 -05:00 by Flamenco 3.9.3
+
+_meta:
+  version: 3
+manager_name: Flamenco
+database: /data/flamenco-manager.sqlite
+database_check_period: 10m0s
+listen: :8080
+autodiscoverable: true
+local_manager_storage_path: /data/storage
+shared_storage_path: /workspace/flamenco
+shaman:
+  enabled: false
+  garbageCollect:
+    period: 24h0m0s
+    maxAge: 744h0m0s
+task_timeout: 10m0s
+worker_timeout: 1m0s
+blocklist_threshold: 3
+task_fail_after_softfail_count: 3
+mqtt:
+  client:
+    enabled: false
+    broker: ""
+    clientID: flamenco
+    topic_prefix: flamenco
+    username: ""
+    password: ""
+variables:
+  blender:
+    values:
+    - platform: linux
+      value: /opt/blender-5.2.2/blender
+    - platform: windows
+      value: blender
+    - platform: darwin
+      value: blender
+  blenderArgs:
+    values:
+    - platform: all
+      value: -b -y
+  storage:
+    is_twoway: true
+    values:
+    - platform: windows
+      value: B:\flamenco
+    - platform: linux
+      value: /workspace/flamenco
