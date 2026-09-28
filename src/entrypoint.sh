@@ -21,9 +21,11 @@ else
   echo "no TS_AUTHKEY: connecting directly to $MANAGER"
 fi
 
-# 2. OptiX in Blender user prefs; needs the real GPU, so it can't happen at build time.
-#    Without it Blender silently renders on the CPU.
-"$BLENDER" -b --python /opt/farm/enable_optix.py | grep PREFS
+# 2. GPU backend (OptiX, else CUDA) in Blender user prefs; needs the real GPU, so it can't happen
+#    at build time. Checked by output, not exit code: without a GPU Blender silently renders on the CPU.
+PREFS=$("$BLENDER" -b --python-exit-code 1 --python /opt/farm/enable_gpu.py 2>&1 | grep '^PREFS ' || true)
+echo "$PREFS"
+grep -qE '^PREFS (OPTIX|CUDA) ' <<<"$PREFS" || { echo "no OptiX/CUDA GPU found, refusing to render on the CPU" >&2; exit 1; }
 
 # 3. Worker, restarted if it exits.
 printf 'worker_name: %s\n' "$NAME" > flamenco-worker.yaml

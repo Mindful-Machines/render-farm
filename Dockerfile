@@ -44,7 +44,7 @@ RUN mkdir -p /opt/tailscale \
     && curl -fsSL https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz \
        | tar -xz -C /opt/tailscale --strip-components=1
 
-COPY src/enable_optix.py src/entrypoint.sh /opt/farm/
+COPY src/enable_gpu.py src/entrypoint.sh /opt/farm/
 
 ENV NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=all \

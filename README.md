@@ -51,7 +51,13 @@ docker run -d --name flamenco-worker --restart unless-stopped --gpus all \
 docker logs flamenco-worker | grep PREFS
 ```
 
-The `PREFS OPTIX [...]` line must list the GPU with `True`. Otherwise Blender silently renders on the CPU. Stop the worker with `docker stop flamenco-worker`.
+The `PREFS` line shows the chosen backend with the GPU `True`:
+
+- **OPTIX** on Linux hosts and RunPod.
+- **CUDA** on Windows with Docker Desktop, whose WSL GPU passthrough doesn't provide OptiX. Rendering is ~5–12% slower, ~10–20% in total including loading. A native Windows `flamenco-worker.exe` (with `B:` mapped) keeps OptiX; the Manager's two-way `storage` variable already supports mixing Windows and Linux workers.
+- **NONE** (no GPU): the worker exits instead of silently rendering on the CPU.
+
+Stop the worker with `docker stop flamenco-worker`.
 
 ### Updating a node
 
@@ -106,6 +112,7 @@ ffmpeg -framerate 30 -i %06d.png -c:v libx264 -pix_fmt yuv420p -crf 16 out.mp4
 
 - **A pod dies mid-chunk.** The chunk is requeued. If a local worker picks it up before `flamenco-sync` has copied the pod's finished frames, it re-renders them. That wastes GPU time only: `--ignore-existing` keeps the first copy, and with a fixed seed both copies are identical.
 - **Dead pod workers.** Each pod registers as a new worker (`runpod-<pod id>`). Old ones stay listed as offline in the Manager; delete them from the web UI when convenient.
+- **Mixed backends on one job.** CUDA (Docker Desktop) and OptiX (pods, Linux) trace rays slightly differently. With a fixed seed, frames should be practically identical but aren't guaranteed bit-exact. Spot-check neighbouring frames from each backend when a job is split between them.
 - **Re-pushing the same version.** A build without an `ARG` bump overwrites the version tag. Pin `:sha-<commit>` when you need an exact build.
 
 ## Agent tooling
